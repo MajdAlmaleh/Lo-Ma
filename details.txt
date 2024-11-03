@@ -1,0 +1,17 @@
+محمد مجد أحمد سلام المالح 
+
+فئة 3 
+
+
+controls:
+
+A : loop between red magnets to select from them
+S : loop between purple magnets to select from them
+
+Arrows : to select where to move the selected magnet
+
+Return : to confirm the selecting at the selected cell
+
+R : restart the level 
+Esc : go to menu 
+
