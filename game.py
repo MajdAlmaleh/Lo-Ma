@@ -1,4 +1,5 @@
 # game.py
+from collections import deque
 import pygame
 from grid import NegativeMagnet, PositiveMagnet
 from levels import load_levels
@@ -17,6 +18,93 @@ class Game:
         self.negative_magnet_index = None
         self.positive_magnet_index = None
         self.selected_level= None
+
+
+    def solve_bfs(self):
+        initial_state = self._get_current_state()
+        queue = deque([(initial_state, [])]) 
+        visited = set()
+        while queue:
+            current_state, path = queue.popleft()
+            if self._is_win_state(current_state):
+                return path 
+            if current_state in visited:
+                continue
+            visited.add(current_state)
+            
+            for move in self._generate_valid_moves(current_state):
+                
+                new_state = self._apply_move(current_state, move)
+                if new_state not in visited:
+                    
+                    queue.append((new_state, path + [move]))
+        
+        return None 
+
+    def solve_dfs(self,):
+        initial_state = self._get_current_state()
+        stack = [(initial_state, [])]  
+        visited = set()
+        
+        while stack:
+            current_state, path = stack.pop()
+            if self._is_win_state(current_state):
+                return path 
+            
+            if current_state in visited:
+                continue
+            visited.add(current_state)
+            for move in self._generate_valid_moves(current_state):
+                new_state = self._apply_move(current_state, move)
+                if new_state not in visited:
+                    stack.append((new_state, path + [move]))
+        
+        return None 
+
+    def  _get_current_state(self):
+        print(tuple(tuple(row) for row in self.current_level.grid.grid))
+        return tuple(tuple(row) for row in self.current_level.grid.grid)
+    
+    def _is_win_state(self, state):
+        self._set_state(state)
+        return self.current_level.grid.check_win()
+
+    def _set_state(self, state):
+        for r, row in enumerate(state):
+            for c, cell in enumerate(row):
+                self.current_level.grid.grid[r][c] = cell
+    
+    def _generate_valid_moves(self, state):
+        self._set_state(state)
+        moves = []
+        for r in range(self.current_level.grid.rows):
+            for c in range(self.current_level.grid.cols):
+                if isinstance(self.current_level.grid.grid[r][c], (PositiveMagnet, NegativeMagnet)):
+                    for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                        target_row, target_col = r + dr, c + dc
+                        if self._is_valid_move(r, c, target_row, target_col):
+                            moves.append(((r, c), (target_row, target_col)))
+        return moves
+
+    def _apply_move(self, state, move):
+        self._set_state(state)
+        (r, c), (target_row, target_col) = move
+        
+        self.current_level.grid.move_magnet(r, c, target_row, target_col)
+        self._shift_magnets_in_line(target_row, target_col, is_row=True)
+        self._shift_magnets_in_line(target_row, target_col, is_row=False)
+        
+        self.draw()
+        pygame.display.flip()
+        # pygame.time.delay(50)  # Adjust this delay to control visualization speed
+        
+        return self._get_current_state()
+
+
+    def _is_valid_move(self, row, col, target_row, target_col):
+        if 0 <= target_row < self.current_level.grid.rows and 0 <= target_col < self.current_level.grid.cols:
+            return self.current_level.grid.is_cell_empty(target_row, target_col)
+        return False
 
     def reset_level(self, level_index):
         self.selected_level= level_index
@@ -49,18 +137,8 @@ class Game:
                     sequence.insert(0, first_items[i])
                 else:
                     break
-
-
-
         sequenced_tuples = [t for t in tuple_list if t[index] in sequence]
         return sequenced_tuples
-
-
-
-
-
-
-
     def _shift_magnets_in_line(self, target_row, target_col, is_row=True):
         magnets_in_line = (
             self.current_level.grid.get_magnets_in_row(target_row) if is_row

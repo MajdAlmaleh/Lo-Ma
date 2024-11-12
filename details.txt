@@ -15,3 +15,7 @@ Return : to confirm the selecting at the selected cell
 R : restart the level 
 Esc : go to menu 
 
+D: dfs solving
+B: bfs solving
+
+

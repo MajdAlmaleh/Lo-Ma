@@ -46,6 +46,12 @@ def handle_key_events(event, game):
             handle_magnet_selection(NegativeMagnet, game)
         elif event.key == pygame.K_a:
             handle_magnet_selection(PositiveMagnet, game)
+        elif event.key == pygame.K_b:
+            bfs_path = game.solve_bfs()
+            print("BFS Solution Path:", bfs_path)
+        elif event.key == pygame.K_d:
+            dfs_path = game.solve_dfs()
+            print("DFS Solution Path:", dfs_path)
         elif event.key == pygame.K_r:
             game.reset_level(game.selected_level)
 
