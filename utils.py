@@ -52,6 +52,14 @@ def handle_key_events(event, game):
         elif event.key == pygame.K_d:
             dfs_path = game.solve_dfs()
             print("DFS Solution Path:", dfs_path)
+        elif event.key == pygame.K_u:
+            solution = game.solve_ucs()
+        elif event.key == pygame.K_h:
+            solution = game.solve_hill_climbing()
+            if solution:
+                print("Solution found:", solution)
+            else:
+                print("No solution exists.")       
         elif event.key == pygame.K_r:
             game.reset_level(game.selected_level)
 

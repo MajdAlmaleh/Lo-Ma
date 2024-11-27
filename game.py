@@ -1,5 +1,6 @@
 # game.py
 from collections import deque
+import heapq
 import pygame
 from grid import NegativeMagnet, PositiveMagnet
 from levels import load_levels
@@ -60,6 +61,91 @@ class Game:
                     stack.append((new_state, path + [move]))
         
         return None 
+    
+
+
+
+    def solve_hill_climbing(self):
+
+        initial_state = self._get_current_state()
+        current_state = initial_state
+        current_path = []
+        visited = set()
+        
+        while True:
+            visited.add(current_state)
+            
+            if self._is_win_state(current_state):
+                return current_path
+            
+            moves = self._generate_valid_moves(current_state)
+            successors = [(move, self._apply_move(current_state, move)) for move in moves]
+            
+            scored_successors = [
+                (self._heuristic(successor_state), move, successor_state)
+                for move, successor_state in successors
+                if successor_state not in visited
+            ]
+            
+            scored_successors.sort(key=lambda x: x[0])
+            
+            if not scored_successors:
+                return None
+            
+            _, best_move, best_state = scored_successors[0]
+            
+            current_state = best_state
+            current_path.append(best_move)
+    
+    def _heuristic(self, state):
+
+        self._set_state(state)
+        grid = self.current_level.grid
+        
+        misplaced_magnets = 0
+        for r in range(grid.rows):
+            for c in range(grid.cols):
+                cell = grid.grid[r][c]
+                if isinstance(cell, (PositiveMagnet, NegativeMagnet)) and not grid.is_magnet_correct(r, c):
+                    misplaced_magnets += 1
+        
+        return misplaced_magnets
+
+
+
+
+   
+    def solve_ucs(self):
+        initial_state = self._get_current_state()
+        print("Initial state:", initial_state) 
+        priority_queue = []
+        heapq.heappush(priority_queue, (0, initial_state, []))
+        visited = set()
+
+        while priority_queue:
+            current_cost, current_state, path = heapq.heappop(priority_queue)
+
+            if self._is_win_state(current_state):
+                return path
+
+            if current_state in visited:
+                continue
+            visited.add(current_state)
+
+            for move in self._generate_valid_moves(current_state):
+                print("Checking move:", move) 
+                new_state = self._apply_move(current_state, move)
+                print("New state:", new_state) 
+                if new_state not in visited:
+                    print('priority_queue')
+                    print(priority_queue, (current_cost + 1, new_state, path + [move]))
+                    print('priority_queue')
+                    heapq.heappush(priority_queue, (current_cost + 1, new_state, path + [move]))
+
+        return None
+
+
+
 
     def  _get_current_state(self):
         print(tuple(tuple(row) for row in self.current_level.grid.grid))

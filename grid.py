@@ -155,6 +155,24 @@ class Grid:
                 return False
         return True
 
+    def is_magnet_correct(self, row, col):
+
+        magnet = self.grid[row][col]
+
+        if not isinstance(magnet, Magnet):
+            return False  
+
+        if (row, col) in self.fixed_cells:
+            if isinstance(magnet, PositiveMagnet) and self.initial_state[row][col] == 1:
+                return True
+            elif isinstance(magnet, NegativeMagnet) and self.initial_state[row][col] == 2:
+                return True
+            elif isinstance(magnet, NormalMagnet) and self.initial_state[row][col] == 3:
+                return True
+
+        return False
+
+
 
 class Level:
     def __init__(self, grid, max_moves):
